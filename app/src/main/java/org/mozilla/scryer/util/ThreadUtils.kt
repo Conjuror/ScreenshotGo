@@ -6,7 +6,7 @@
 package org.mozilla.scryer.util
 
 import android.os.Looper
-import kotlinx.coroutines.experimental.asCoroutineDispatcher
+import kotlinx.coroutines.asCoroutineDispatcher
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.atomic.AtomicInteger

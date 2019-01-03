@@ -31,7 +31,10 @@ import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.text.FirebaseVisionText
 import kotlinx.android.synthetic.main.activity_detail_page.*
-import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import mozilla.components.browser.search.SearchEngineManager
 import mozilla.components.browser.search.provider.AssetsSearchEngineProvider
 import mozilla.components.browser.search.provider.localization.LocaleSearchLocalizationProvider
@@ -48,8 +51,10 @@ import org.mozilla.scryer.sortingpanel.SortingPanelActivity
 import org.mozilla.scryer.telemetry.TelemetryWrapper
 import org.mozilla.scryer.ui.ScryerToast
 import org.mozilla.scryer.viewmodel.ScreenshotViewModel
-import kotlin.coroutines.experimental.CoroutineContext
-import kotlin.coroutines.experimental.suspendCoroutine
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 class DetailPageActivity : AppCompatActivity(), CoroutineScope {
     override val coroutineContext: CoroutineContext
@@ -480,8 +485,8 @@ class DetailPageActivity : AppCompatActivity(), CoroutineScope {
     private suspend fun runTextRecognition(selectedImage: Bitmap): FirebaseVisionText? =
             suspendCoroutine { cont ->
                 val image = FirebaseVisionImage.fromBitmap(selectedImage)
-                val detector = FirebaseVision.getInstance().visionTextDetector
-                detector.detectInImage(image)
+                val detector = FirebaseVision.getInstance().onDeviceTextRecognizer
+                detector.processImage(image)
                         .addOnSuccessListener { texts ->
                             cont.resume(texts)
                         }
@@ -491,7 +496,7 @@ class DetailPageActivity : AppCompatActivity(), CoroutineScope {
             }
 
     private fun processTextRecognitionResult(texts: FirebaseVisionText) {
-        val blocks = texts.blocks.toMutableList().apply { }
+        val blocks = texts.textBlocks.toMutableList().apply { }
         blocks.sortBy { it.boundingBox?.centerY() }
 
         if (blocks.size == 0) {
@@ -505,7 +510,7 @@ class DetailPageActivity : AppCompatActivity(), CoroutineScope {
         drawHighlights(blocks)
     }
 
-    private fun buildFullTextString(blocks: List<FirebaseVisionText.Block>): String {
+    private fun buildFullTextString(blocks: List<FirebaseVisionText.TextBlock>): String {
         val builder = StringBuilder()
         blocks.forEach { block ->
             val lines = block.lines.toMutableList().apply {
@@ -521,7 +526,7 @@ class DetailPageActivity : AppCompatActivity(), CoroutineScope {
         return builder.toString()
     }
 
-    private fun drawHighlights(blocks: List<FirebaseVisionText.Block>) {
+    private fun drawHighlights(blocks: List<FirebaseVisionText.TextBlock>) {
         mGraphicOverlay.clear()
 
         blocks.forEach { block ->

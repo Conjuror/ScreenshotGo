@@ -5,22 +5,22 @@ object Versions {
     val constraint_layout = "1.1.2"
     val arch_lifecycle = "1.1.1"
     val arch_room = "1.1.1"
-    val arch_navigation = "1.0.0-alpha05"
-    val arch_work = "1.0.0-alpha12"
+    val arch_navigation = "1.0.0-alpha09"
+    val arch_work = "1.0.0-beta01"
 
     // Crashlytics
     val fabric_gradle_plugin = "1.26.1"
     val crashlytics = "2.9.7"
 
     // Google
-    val firebase = "16.0.1"
-    val firebase_messageing = "17.0.0"
-    val firebase_ml = "16.0.0"
+    val firebase = "16.0.6"
+    val firebase_messageing = "17.3.4"
+    val firebase_ml = "18.0.2"
     val google_service_plugin = "4.2.0"
 
     // Kotlin
-    val kotlin = "1.2.71"
-    val kotlin_coroutine = "0.30.2"
+    val kotlin = "1.3.11"
+    val kotlin_coroutine = "1.1.0"
 
     // Test
     val junit = "4.12"
