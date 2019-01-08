@@ -14,12 +14,13 @@ import java.util.*
 //                parentColumns = ["id"],
 //                childColumns = ["collection_id"]))],
         indices = [Index("collection_id"), Index("absolute_path", unique = true)])
-data class ScreenshotModel constructor (
+data class ScreenshotModel constructor(
         @PrimaryKey(autoGenerate = false) var id: String,
         @ColumnInfo(name = "absolute_path") var absolutePath: String,
         @ColumnInfo(name = "last_modified") var lastModified: Long,
-        @ColumnInfo(name = "collection_id") var collectionId: String) {
+        @ColumnInfo(name = "collection_id") var collectionId: String,
+        @ColumnInfo(name = "content_text") var contentText: String?) {
     @Ignore
-    constructor(absolutePath: String, lastModified: Long, collectionId: String)
-            : this(UUID.randomUUID().toString(), absolutePath, lastModified, collectionId)
+    constructor(absolutePath: String, lastModified: Long, collectionId: String, contentText: String? = null)
+            : this(UUID.randomUUID().toString(), absolutePath, lastModified, collectionId, contentText)
 }

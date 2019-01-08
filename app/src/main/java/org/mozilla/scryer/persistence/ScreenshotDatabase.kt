@@ -8,7 +8,7 @@ package org.mozilla.scryer.persistence
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
-@Database(entities = [CollectionModel::class, ScreenshotModel::class], version = 1)
+@Database(entities = [CollectionModel::class, ScreenshotModel::class, FtsEntity::class], version = 1)
 abstract class ScreenshotDatabase: RoomDatabase() {
     abstract fun screenshotDao(): ScreenshotDao
     abstract fun collectionDao(): CollectionDao

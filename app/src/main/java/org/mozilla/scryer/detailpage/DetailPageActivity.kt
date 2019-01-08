@@ -13,6 +13,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Point
 import android.graphics.RectF
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -31,10 +32,7 @@ import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.text.FirebaseVisionText
 import kotlinx.android.synthetic.main.activity_detail_page.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import mozilla.components.browser.search.SearchEngineManager
 import mozilla.components.browser.search.provider.AssetsSearchEngineProvider
 import mozilla.components.browser.search.provider.localization.LocaleSearchLocalizationProvider
@@ -45,6 +43,7 @@ import org.mozilla.scryer.collectionview.showDeleteScreenshotDialog
 import org.mozilla.scryer.collectionview.showScreenshotInfoDialog
 import org.mozilla.scryer.collectionview.showShareScreenshotDialog
 import org.mozilla.scryer.persistence.CollectionModel
+import org.mozilla.scryer.persistence.FtsEntity
 import org.mozilla.scryer.persistence.ScreenshotModel
 import org.mozilla.scryer.promote.Promoter
 import org.mozilla.scryer.sortingpanel.SortingPanelActivity
@@ -102,6 +101,10 @@ class DetailPageActivity : AppCompatActivity(), CoroutineScope {
     }
 
     private val viewModel: ScreenshotViewModel by lazy {
+        ScreenshotViewModel.get(this)
+    }
+
+    private val screenshotViewModel: ScreenshotViewModel by lazy {
         ScreenshotViewModel.get(this)
     }
 
@@ -287,13 +290,26 @@ class DetailPageActivity : AppCompatActivity(), CoroutineScope {
                 })
     }
 
+    private fun storeText(screenshot: ScreenshotModel, contentText: String) {
+        GlobalScope.launch {
+            screenshot.contentText = contentText
+            val count = screenshotViewModel.updateScreenshot(screenshot)
+            Log.d("mmmmmmmm", "updated row: $count")
+
+            screenshotViewModel.getScreenshot(screenshot.id).let {
+                Log.d("mmmmmmmm", "content_text: ${it?.contentText}")
+            }
+        }
+    }
+
     private fun startRecognition() {
         val appContext = applicationContext
         launch(Dispatchers.Main) {
             updateUI()
 
+            val screenshot = screenshots[view_pager.currentItem]
             val result = withContext(Dispatchers.Default) {
-                runTextRecognition(screenshots[view_pager.currentItem])
+                runTextRecognition(screenshot)
             }
 
             if (result is Result.Success) {
@@ -305,6 +321,8 @@ class DetailPageActivity : AppCompatActivity(), CoroutineScope {
                 } else {
                     TelemetryWrapper.viewTextInScreenshot(TelemetryWrapper.Value.SUCCESS)
                 }
+
+                storeText(screenshot, result.value.text)
 
                 if (isRecognizing) {
                     processTextRecognitionResult(result.value)
@@ -378,7 +396,7 @@ class DetailPageActivity : AppCompatActivity(), CoroutineScope {
             updateFabUI(true, false)
             enableActionMenu(false)
 
-            launch (Dispatchers.Main) {
+            launch(Dispatchers.Main) {
                 setupTextSelectionCallback(textModeResultTextView)
                 updateLoadingViewVisibility(false)
                 updateTextModePanelVisibility(true)
@@ -540,17 +558,17 @@ class DetailPageActivity : AppCompatActivity(), CoroutineScope {
     private suspend fun setupTextSelectionCallback(textView: TextView) = withContext(Dispatchers.Default) {
         val searchEngineManager = SearchEngineManager(listOf(
                 AssetsSearchEngineProvider(LocaleSearchLocalizationProvider())))
-        val engine = searchEngineManager.getDefaultSearchEngine(this@DetailPageActivity)
-        textView.customSelectionActionModeCallback = TextSelectionCallback(
-                textView,
-                object : TextSelectionCallback.SearchEngineDelegate {
-                    override val name: String
-                        get() = engine.name
-
-                    override fun buildSearchUrl(text: String): String {
-                        return engine.buildSearchUrl(text)
-                    }
-                })
+//        val engine = searchEngineManager.getDefaultSearchEngine(this@DetailPageActivity)
+//        textView.customSelectionActionModeCallback = TextSelectionCallback(
+//                textView,
+//                object : TextSelectionCallback.SearchEngineDelegate {
+//                    override val name: String
+//                        get() = engine.name
+//
+//                    override fun buildSearchUrl(text: String): String {
+//                        return engine.buildSearchUrl(text)
+//                    }
+//                })
     }
 
 //    private fun showSystemUI() {
@@ -593,6 +611,7 @@ class DetailPageActivity : AppCompatActivity(), CoroutineScope {
                 value: FirebaseVisionText,
                 @Suppress("unused") val msg: String
         ) : Success(value)
+
         class Failed(@Suppress("unused") val msg: String) : Result()
     }
 

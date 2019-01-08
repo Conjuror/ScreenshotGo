@@ -26,8 +26,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/home_background"
-            app:navigationIcon="@drawable/back"
-            app:title="Collection" />
+            app:navigationIcon="@drawable/back">
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/search_edittext"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+        </androidx.appcompat.widget.Toolbar>
     </FrameLayout>
 
     <LinearLayout

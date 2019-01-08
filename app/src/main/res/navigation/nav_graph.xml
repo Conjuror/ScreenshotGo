@@ -41,7 +41,7 @@
     </fragment>
     <fragment
         android:id="@+id/SearchFragment"
-        android:name="org.mozilla.scryer.search.SearchFragment"
+        android:name="org.mozilla.scryer.collectionview.SearchFragment"
         android:label="Search">
     </fragment>
 </navigation>

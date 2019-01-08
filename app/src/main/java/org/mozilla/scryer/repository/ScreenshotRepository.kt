@@ -11,6 +11,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import android.content.Context
 import org.mozilla.scryer.persistence.CollectionModel
+import org.mozilla.scryer.persistence.FtsEntity
 import org.mozilla.scryer.persistence.ScreenshotDatabase
 import org.mozilla.scryer.persistence.ScreenshotModel
 
@@ -40,9 +41,10 @@ interface ScreenshotRepository {
     fun deleteCollection(collection: CollectionModel)
 
     fun addScreenshot(screenshots: List<ScreenshotModel>)
-    fun updateScreenshot(screenshot: ScreenshotModel)
+    fun updateScreenshot(screenshot: ScreenshotModel): Int
     fun getScreenshot(screenshotId: String): ScreenshotModel?
     fun getScreenshots(): LiveData<List<ScreenshotModel>>
+    fun getScreenshots(queryText: String): LiveData<List<ScreenshotModel>>
     fun getScreenshotList(): List<ScreenshotModel>
     fun getScreenshots(collectionIds: List<String>): LiveData<List<ScreenshotModel>>
     fun getScreenshotList(collectionIds: List<String>): List<ScreenshotModel>

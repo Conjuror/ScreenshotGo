@@ -12,21 +12,28 @@ import android.content.Context
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.mozilla.scryer.R
-import org.mozilla.scryer.persistence.CollectionModel
-import org.mozilla.scryer.persistence.SuggestCollectionHelper
-import org.mozilla.scryer.persistence.ScreenshotDatabase
-import org.mozilla.scryer.persistence.ScreenshotModel
+import org.mozilla.scryer.persistence.*
 
 class ScreenshotDatabaseRepository(private val database: ScreenshotDatabase) : ScreenshotRepository {
     private var collectionListData = database.collectionDao().getCollections()
     private val screenshotListData = database.screenshotDao().getScreenshots()
 
     override fun addScreenshot(screenshots: List<ScreenshotModel>) {
-        database.screenshotDao().addScreenshot(screenshots)
+        val screenshotDao = database.screenshotDao()
+        val conflict = ArrayList<ScreenshotModel>(0)
+        screenshots.forEach {
+            val count = screenshotDao.addScreenshot(it)
+            if(count == 0L){
+                conflict.add(it)
+            }
+        }
+        conflict.forEach {
+            screenshotDao.updateScreenshot(it)
+        }
     }
 
-    override fun updateScreenshot(screenshot: ScreenshotModel) {
-        database.screenshotDao().updateScreenshot(screenshot)
+    override fun updateScreenshot(screenshot: ScreenshotModel): Int {
+        return database.screenshotDao().updateScreenshot(screenshot)
     }
 
     override fun getScreenshot(screenshotId: String): ScreenshotModel? {
@@ -39,6 +46,10 @@ class ScreenshotDatabaseRepository(private val database: ScreenshotDatabase) : S
 
     override fun getScreenshots(): LiveData<List<ScreenshotModel>> {
         return screenshotListData
+    }
+
+    override fun getScreenshots(queryText: String): LiveData<List<ScreenshotModel>> {
+        return database.screenshotDao().searchScreenshots(queryText)
     }
 
     override fun deleteScreenshot(screenshot: ScreenshotModel) {

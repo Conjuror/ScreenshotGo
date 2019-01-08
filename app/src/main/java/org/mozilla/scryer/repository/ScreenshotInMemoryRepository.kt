@@ -8,6 +8,7 @@ package org.mozilla.scryer.repository
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import org.mozilla.scryer.persistence.CollectionModel
+import org.mozilla.scryer.persistence.FtsEntity
 import org.mozilla.scryer.persistence.ScreenshotModel
 
 @Suppress("unused")
@@ -44,8 +45,9 @@ class ScreenshotInMemoryRepository : ScreenshotRepository {
         screenshotData.value = screenshotList
     }
 
-    override fun updateScreenshot(screenshot: ScreenshotModel) {
+    override fun updateScreenshot(screenshot: ScreenshotModel): Int {
         screenshotData.value = screenshotList
+        return 0
     }
 
     override fun getScreenshot(screenshotId: String): ScreenshotModel? {
@@ -57,6 +59,10 @@ class ScreenshotInMemoryRepository : ScreenshotRepository {
     }
 
     override fun getScreenshots(collectionIds: List<String>): LiveData<List<ScreenshotModel>> {
+        return screenshotData
+    }
+
+    override fun getScreenshots(queryText: String): LiveData<List<ScreenshotModel>> {
         return screenshotData
     }
 
